@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web3-sample-app
+spec:
+  selector:
+    matchLabels:
+      app: web3-sample-app
+  template:
+    metadata:
+      labels:
+        app: web3-sample-app
+    spec:
+      containers:
+        - name: web3-sample-app
+          image: ghcr.io/qleet/go-web3-sample-app:v0.0.1
+          env:
+            - name: PORT
+              value: '8080'
+            - name: RPCENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: web3-sample-app-config
+                  key: RPCENDPOINT
+          ports:
+            - containerPort: 8080
+      restartPolicy: Always
