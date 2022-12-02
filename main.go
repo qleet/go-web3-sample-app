@@ -32,7 +32,6 @@ func getBalance(address string, client *ethclient.Client, context context.Contex
 	if err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Println(balance)
 
 	fbalance = new(big.Float)
 	fbalance.SetString(balance.String())
