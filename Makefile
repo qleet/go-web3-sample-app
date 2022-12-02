@@ -59,7 +59,8 @@ image-build:
 #image-run: @ Run a Docker image
 image-run: image-stop
 	@export RPCENDPOINT=https://rpc.ankr.com/eth && docker-compose -f "docker-compose.yml" up --build
-#	@docker run -d --rm -p 8080:8080 --name web3 go-web3-sample-app:v0.0.1 --env-file .env
+#	@docker run --rm -p 8080:8080 --name web3 go-web3-sample-app:v0.0.2 -e RPCENDPOINT='https://rpc.ankr.com/eth'
+#	@docker run --rm --env RPCENDPOINT=https://rpc.ankr.com/eth alpine:3 env
 
 #image-stop: @ Stop a Docker image
 image-stop:
