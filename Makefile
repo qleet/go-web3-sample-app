@@ -54,7 +54,7 @@ version:
 
 #image-build: @ Build a Docker image
 image-build:
-	docker build -t go-web3-sample-app:v0.0.1 .
+	docker build -t go-web3-sample-app:$(CURRENTTAG) .
 
 #image-run: @ Run a Docker image
 image-run: image-stop
