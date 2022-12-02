@@ -17,7 +17,7 @@ import (
 )
 
 type BalanceDetails struct {
-	Account   string
+	Address string
 }
 
 var ctx context.Context
@@ -27,16 +27,18 @@ var ethValue *big.Float
 var rpcendpoint = os.Getenv("RPCENDPOINT")
 //var rpcendpoint="https://1rpc.io/eth"
 
-func getBalance(client *ethclient.Client, context context.Context)  {
+func getBalance(address string, client *ethclient.Client, context context.Context)  {
 	account := common.HexToAddress(address)
 	balance, err := client.BalanceAt(context, account, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(balance)
+	//fmt.Println(balance)
+
 	fbalance = new(big.Float)
 	fbalance.SetString(balance.String())
 	ethValue = new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
+
 	fmt.Println(ethValue)
 }
 
@@ -59,27 +61,26 @@ func main() {
 		log.Fatal(err)
 	}
 
-	address = "0x71c7656ec7ab88b098defb751b7401b5f6d8976f"
-	getBalance(ethClient, ctx)
-	tmpl := template.Must(template.ParseFiles("forms.html"))
+	address = "0xeB2629a2734e272Bcc07BDA959863f316F4bD4Cf"
+	getBalance(address, ethClient, ctx)
+	tmpl := template.Must(template.ParseFiles("index.html"))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			getBalance(ethClient, ctx)
-			tmpl.Execute(w, struct{ Success bool; Account string;  Balance  *big.Float}{true, address, ethValue})
-			return
-		}
-
 		details := BalanceDetails{
-			Account:   r.FormValue("account"),
+			Address: r.FormValue("address"),
 		}
 
 		// do something with details
-		_ = details
+		if r.Method == http.MethodPost {
+			address = details.Address
+		}
 
+		getBalance(address, ethClient, ctx)
+		tmpl.Execute(w, struct{ Success bool; Address string;  Balance  *big.Float}{true, address, ethValue})
 		tmpl.Execute(w, struct{ Success bool }{true})
 	})
 
-	fmt.Println("Running at: http://localhost:9090")
-	http.ListenAndServe(":9090", nil)
+	port:=":8080"
+	fmt.Println("Running at: http://localhost"+port)
+	http.ListenAndServe(port, nil)
 }
