@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  api:
+    container_name: go-web3-sample-app
+    build:
+      context: ./
+    image: go-web3-sample-app
+    ports:
+      - "8080:8080"
+    environment:
+      RPCENDPOINT: ${RPCENDPOINT}
+    networks:
+      server_net:
+        ipv4_address: 172.28.1.11
+volumes:
+  db:
+    driver: local
+networks:
+  server_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16

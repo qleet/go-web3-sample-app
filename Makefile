@@ -57,9 +57,11 @@ image-build:
 	docker build -t go-web3-sample-app:v0.0.1 .
 
 #image-run: @ Run a Docker image
-image-run:
-	@docker run -d --rm -p 8080:8080 --name web3 go-web3-sample-app:v0.0.1 --env-file .env
+image-run: image-stop
+	@export RPCENDPOINT=https://rpc.ankr.com/eth && docker-compose -f "docker-compose.yml" up --build
+#	@docker run -d --rm -p 8080:8080 --name web3 go-web3-sample-app:v0.0.1 --env-file .env
 
 #image-stop: @ Stop a Docker image
 image-stop:
-	@docker stop web3 || true
+	@docker-compose -f "docker-compose.yml" down --volumes
+#	@docker stop web3 || true

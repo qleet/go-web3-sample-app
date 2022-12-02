@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"html/template"
 	"log"
@@ -12,19 +13,23 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
 )
 
 type BalanceDetails struct {
 	Account   string
 }
 
+var ctx context.Context
 var address string
 var fbalance *big.Float
 var ethValue *big.Float
+var rpcendpoint = os.Getenv("RPCENDPOINT")
+//var rpcendpoint="https://1rpc.io/eth"
 
-func getBalance(client *ethclient.Client)  {
+func getBalance(client *ethclient.Client, context context.Context)  {
 	account := common.HexToAddress(address)
-	balance, err := client.BalanceAt(context.Background(), account, nil)
+	balance, err := client.BalanceAt(context, account, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -36,22 +41,31 @@ func getBalance(client *ethclient.Client)  {
 }
 
 func main() {
-	rpcendpoint:=os.Getenv("RPCENDPOINT")
+
+	ctx = context.Background()
 
 	fmt.Println("RPCENDPOINT: ",rpcendpoint)
 
-	client, err := ethclient.Dial(rpcendpoint)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify : true},
+	}
+	httpClient := &http.Client{Transport: tr}
+	rpcClient, err := rpc.DialHTTPWithClient(rpcendpoint, httpClient)
+	if err != nil {
+		log.Fatal(err)
+	}
+	ethClient := ethclient.NewClient(rpcClient)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	address = "0x71c7656ec7ab88b098defb751b7401b5f6d8976f"
-	getBalance(client)
+	getBalance(ethClient, ctx)
 	tmpl := template.Must(template.ParseFiles("forms.html"))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			getBalance(client)
+			getBalance(ethClient, ctx)
 			tmpl.Execute(w, struct{ Success bool; Account string;  Balance  *big.Float}{true, address, ethValue})
 			return
 		}
