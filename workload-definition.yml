@@ -12,7 +12,7 @@ kind: ConfigMap
 metadata:
   name: web3-sample-app-config
 data:
-  RPCENDPOINT: http://forward-proxy.forward-proxy-system.svc.cluster.local
+  RPCENDPOINT: https://forward-proxy.forward-proxy-system.svc.cluster.local
 ---
 apiVersion: apps/v1
 kind: Deployment

@@ -26,7 +26,7 @@ var fbalance *big.Float
 var ethValue *big.Float
 var rpcendpoint = os.Getenv("RPCENDPOINT")
 
-func getBalance(address string, client *ethclient.Client, context context.Context)  {
+func getBalance(address string, client *ethclient.Client, context context.Context) {
 	account := common.HexToAddress(address)
 	balance, err := client.BalanceAt(context, account, nil)
 	if err != nil {
@@ -45,10 +45,10 @@ func main() {
 
 	ctx = context.Background()
 
-	fmt.Println("RPCENDPOINT: ",rpcendpoint)
+	fmt.Println("RPCENDPOINT: ", rpcendpoint)
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify : true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	httpClient := &http.Client{Transport: tr}
 	rpcClient, err := rpc.DialHTTPWithClient(rpcendpoint, httpClient)
@@ -69,17 +69,20 @@ func main() {
 			Address: r.FormValue("address"),
 		}
 
-		// do something with details
 		if r.Method == http.MethodPost {
 			address = details.Address
 		}
 
 		getBalance(address, ethClient, ctx)
-		tmpl.Execute(w, struct{ Success bool; Address string;  Balance  *big.Float}{true, address, ethValue})
+		tmpl.Execute(w, struct {
+			Success bool
+			Address string
+			Balance *big.Float
+		}{true, address, ethValue})
 		tmpl.Execute(w, struct{ Success bool }{true})
 	})
 
-	port:=":8080"
-	fmt.Println("Running at: http://localhost"+port)
+	port := ":8080"
+	fmt.Println("Running at: http://localhost" + port)
 	http.ListenAndServe(port, nil)
 }
