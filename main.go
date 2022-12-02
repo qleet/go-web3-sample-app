@@ -25,7 +25,6 @@ var address string
 var fbalance *big.Float
 var ethValue *big.Float
 var rpcendpoint = os.Getenv("RPCENDPOINT")
-//var rpcendpoint="https://1rpc.io/eth"
 
 func getBalance(address string, client *ethclient.Client, context context.Context)  {
 	account := common.HexToAddress(address)
