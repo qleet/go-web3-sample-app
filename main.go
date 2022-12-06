@@ -22,35 +22,32 @@ type BalanceDetails struct {
 
 var ctx context.Context
 var address string
-var fbalance *big.Float
 var ethValue *big.Float
 var rpcendpoint = os.Getenv("RPCENDPOINT")
 
-func getBalance(address string, client *ethclient.Client, context context.Context) {
+func getBalance(address string, ethclient *ethclient.Client, context context.Context) {
 	account := common.HexToAddress(address)
-	balance, err := client.BalanceAt(context, account, nil)
+	balance, err := ethclient.BalanceAt(context, account, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fbalance = new(big.Float)
+	fbalance := new(big.Float)
 	fbalance.SetString(balance.String())
 	ethValue = new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
 
-	fmt.Println(ethValue)
+	fmt.Printf("Account: %s Balance: %v ETH\n", address, ethValue)
 }
 
-func main() {
-
-	ctx = context.Background()
-
-	fmt.Println("RPCENDPOINT: ", rpcendpoint)
-
+func getHttpClient() *http.Client {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	httpClient := &http.Client{Transport: tr}
-	rpcClient, err := rpc.DialHTTPWithClient(rpcendpoint, httpClient)
+	return &http.Client{Transport: tr}
+}
+
+func getEthClient() *ethclient.Client {
+	rpcClient, err := rpc.DialHTTPWithClient(rpcendpoint, getHttpClient())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,8 +56,19 @@ func main() {
 		log.Fatal(err)
 	}
 
+	return ethClient
+}
+
+func main() {
+	ctx = context.Background()
+
+	port := ":8080"
+	fmt.Println("go-web3-sample-app is running at: http://localhost" + port)
+
+	fmt.Println("RPCENDPOINT:", rpcendpoint)
+
 	address = "0xeB2629a2734e272Bcc07BDA959863f316F4bD4Cf"
-	getBalance(address, ethClient, ctx)
+	getBalance(address, getEthClient(), ctx)
 	tmpl := template.Must(template.ParseFiles("index.html"))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +80,7 @@ func main() {
 			address = details.Address
 		}
 
-		getBalance(address, ethClient, ctx)
+		getBalance(address, getEthClient(), ctx)
 		tmpl.Execute(w, struct {
 			Success bool
 			Address string
@@ -81,7 +89,5 @@ func main() {
 		tmpl.Execute(w, struct{ Success bool }{true})
 	})
 
-	port := ":8080"
-	fmt.Println("Running at: http://localhost" + port)
 	http.ListenAndServe(port, nil)
 }
