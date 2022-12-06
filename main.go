@@ -45,7 +45,7 @@ func getEthClient(httpClient *http.Client) *ethclient.Client {
 	return ethClient
 }
 
-func getBalance(address string, ethclient *ethclient.Client, context context.Context) {
+func getBalance(address string, ethclient *ethclient.Client, context context.Context) *big.Float {
 	account := common.HexToAddress(address)
 	balance, err := ethclient.BalanceAt(context, account, nil)
 	if err != nil {
@@ -54,9 +54,10 @@ func getBalance(address string, ethclient *ethclient.Client, context context.Con
 
 	fbalance := new(big.Float)
 	fbalance.SetString(balance.String())
-	ethValue = new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
+	lev := new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
 
-	fmt.Printf("Account: %s Balance: %v ETH\n", address, ethValue)
+	fmt.Printf("Account: %s Balance: %v ETH\n", address, lev)
+	return lev
 }
 func main() {
 	ctx = context.Background()
@@ -70,19 +71,19 @@ func main() {
 	ethClient := getEthClient(httpClient)
 
 	address = "0xeB2629a2734e272Bcc07BDA959863f316F4bD4Cf"
-	getBalance(address, ethClient, ctx)
+	ethValue = getBalance(address, ethClient, ctx)
 	tmpl := template.Must(template.ParseFiles("index.html"))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
 		details := BalanceDetails{
 			Address: r.FormValue("address"),
 		}
 
 		if r.Method == http.MethodPost {
 			address = details.Address
+			ethValue = getBalance(address, ethClient, ctx)
 		}
-
-		getBalance(address, ethClient, ctx)
 
 		tmpl.Execute(w, struct {
 			Success bool
