@@ -25,6 +25,26 @@ var address string
 var ethValue *big.Float
 var rpcendpoint = os.Getenv("RPCENDPOINT")
 
+func getHttpClient() *http.Client {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	return &http.Client{Transport: tr}
+}
+
+func getEthClient(httpClient *http.Client) *ethclient.Client {
+	rpcClient, err := rpc.DialHTTPWithClient(rpcendpoint, httpClient)
+	if err != nil {
+		log.Fatal(err)
+	}
+	ethClient := ethclient.NewClient(rpcClient)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return ethClient
+}
+
 func getBalance(address string, ethclient *ethclient.Client, context context.Context) {
 	account := common.HexToAddress(address)
 	balance, err := ethclient.BalanceAt(context, account, nil)
@@ -38,27 +58,6 @@ func getBalance(address string, ethclient *ethclient.Client, context context.Con
 
 	fmt.Printf("Account: %s Balance: %v ETH\n", address, ethValue)
 }
-
-func getHttpClient() *http.Client {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	return &http.Client{Transport: tr}
-}
-
-func getEthClient() *ethclient.Client {
-	rpcClient, err := rpc.DialHTTPWithClient(rpcendpoint, getHttpClient())
-	if err != nil {
-		log.Fatal(err)
-	}
-	ethClient := ethclient.NewClient(rpcClient)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return ethClient
-}
-
 func main() {
 	ctx = context.Background()
 
@@ -67,8 +66,11 @@ func main() {
 
 	fmt.Println("RPCENDPOINT:", rpcendpoint)
 
+	httpClient := getHttpClient()
+	ethClient := getEthClient(httpClient)
+
 	address = "0xeB2629a2734e272Bcc07BDA959863f316F4bD4Cf"
-	getBalance(address, getEthClient(), ctx)
+	getBalance(address, ethClient, ctx)
 	tmpl := template.Must(template.ParseFiles("index.html"))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +82,8 @@ func main() {
 			address = details.Address
 		}
 
-		getBalance(address, getEthClient(), ctx)
+		getBalance(address, ethClient, ctx)
+
 		tmpl.Execute(w, struct {
 			Success bool
 			Address string
