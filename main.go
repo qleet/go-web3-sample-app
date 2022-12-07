@@ -64,24 +64,32 @@ func main() {
 
 	log.Println("RPCENDPOINT:", rpcendpoint)
 
+	// set http Transport
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
+	// set http Client
 	httpClient := getHttpClient(transport)
+	// set eth Client
 	ethClient := getEthClient(httpClient)
 
+	// initial address
 	address = "0xeB2629a2734e272Bcc07BDA959863f316F4bD4Cf"
+	// get initial balance for the initial address
 	ethValue = getBalance(address, ethClient, ctx)
 	tmpl := template.Must(template.ParseFiles("index.html"))
 
+	// handle HTTP requests
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-
-		details := BalanceDetails{
-			Address: r.FormValue("address"),
-		}
-
+		// call getBalance only on POST otherwise use ethValue from previous getBalance call
 		if r.Method == http.MethodPost {
+			// get details from HTML form
+			details := BalanceDetails{
+				Address: r.FormValue("address"),
+			}
+			// set address to value from HTML form
 			address = details.Address
+			// get ETH balance into ethValue
 			ethValue = getBalance(address, ethClient, ctx)
 		}
 
@@ -90,7 +98,8 @@ func main() {
 			Address string
 			Balance *big.Float
 		}{true, address, ethValue})
-		tmpl.Execute(w, struct{ Success bool }{true})
+
+		//tmpl.Execute(w, struct{ Success bool }{true})
 	})
 
 	http.ListenAndServe(port, nil)

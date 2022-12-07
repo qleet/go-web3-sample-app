@@ -1,8 +1,8 @@
 {{if .Success}}
 <div class="container">
     <form action="/"  method="POST">
-        <input value="{{.Address}}" type="text" name="address">&nbsp;ETH<br /><br />
-        Balance {{.Balance}}<br /><br />
+        <b>Account</b>&nbsp;<input value="{{.Address}}" type="text" name="address" style="width: 350px;"><br/><br/>
+        <b>Balance</b> {{.Balance}}&nbsp;ETH<br/><br/>
         <input type="submit">
     </form>
 </div>
