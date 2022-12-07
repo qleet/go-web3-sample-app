@@ -72,6 +72,7 @@ func main() {
 	httpClient := getHttpClient(transport)
 	// set eth Client
 	ethClient := getEthClient(httpClient)
+	defer ethClient.Close()
 
 	// initial address
 	address = "0xeB2629a2734e272Bcc07BDA959863f316F4bD4Cf"
