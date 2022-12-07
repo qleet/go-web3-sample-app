@@ -72,7 +72,7 @@ image-stop:
 kind-deploy: image-build
 	@kind load docker-image go-web3-sample-app:$(CURRENTTAG) -n $(KINDCLUSTER) && \
 	cat ./k8s/ns.yaml | kubectl apply -f - && \
-	cat ./k8s/cm.yaml | kubectl apply --namespace=web3 -f - && \
+	cat ./k8s-kind-qleet/cm.yaml | kubectl apply --namespace=web3 -f - && \
 	yq eval '.spec.template.spec.containers[0].image = "go-web3-sample-app:$(CURRENTTAG)"' ./k8s/deployment.yaml | kubectl apply --namespace=web3 -f - && \
 	cat ./k8s/service.yaml | kubectl apply --namespace=web3 -f -
 

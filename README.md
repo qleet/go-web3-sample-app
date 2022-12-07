@@ -11,6 +11,7 @@ Web3 sample app in Go
 * [curl](https://help.ubidots.com/en/articles/2165289-learn-how-to-install-run-curl-on-windows-macosx-linux)
 * [wget](https://www.gnu.org/software/wget/)
 * [jq](https://github.com/stedolan/jq/wiki/Installation)
+* [yq](https://github.com/mikefarah/yq/#install)
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
 * [kind >=0.16.0](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
 
@@ -45,6 +46,7 @@ make kind-undeploy
 #### Deploy workload
 
 ```bash
+kubectl apply -f ./k8s/ns.yaml
 kubectl apply -f ./k8s --namespace=web3 --validate=false
 ```
 
