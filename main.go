@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"html/template"
 	"log"
 	"math"
@@ -25,10 +24,8 @@ var address string
 var ethValue *big.Float
 var rpcendpoint = os.Getenv("RPCENDPOINT")
 
-func getHttpClient() *http.Client {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
+func getHttpClient(tr *http.Transport) *http.Client {
+	// reuse connections https://stuartleeks.com/posts/connection-re-use-in-golang-with-http-client/
 	return &http.Client{Transport: tr}
 }
 
@@ -56,18 +53,21 @@ func getBalance(address string, ethclient *ethclient.Client, context context.Con
 	fbalance.SetString(balance.String())
 	lev := new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
 
-	fmt.Printf("Account: %s Balance: %v ETH\n", address, lev)
+	log.Printf("Account: %s Balance: %v ETH\n", address, lev)
 	return lev
 }
 func main() {
 	ctx = context.Background()
 
 	port := ":8080"
-	fmt.Println("go-web3-sample-app is running at: http://localhost" + port)
+	log.Println("go-web3-sample-app is running at: http://localhost" + port)
 
-	fmt.Println("RPCENDPOINT:", rpcendpoint)
+	log.Println("RPCENDPOINT:", rpcendpoint)
 
-	httpClient := getHttpClient()
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	httpClient := getHttpClient(transport)
 	ethClient := getEthClient(httpClient)
 
 	address = "0xeB2629a2734e272Bcc07BDA959863f316F4bD4Cf"
